@@ -1,0 +1,63 @@
+# For development
+version: '3.4'
+
+services:
+
+  server:
+    container_name: server
+    build:
+      context: ./services/server
+      dockerfile: Dockerfile
+    volumes:
+      - './services/server:/usr/src/app'
+    ports:
+      - 5000:5000
+    #environment:
+      # - APP_SETTINGS=project.config.DevelopmentConfig
+      # - DATABASE_URL=postgres://postgres:postgres@users-db:5432/users_dev
+      # - DATABASE_TEST_URL=postgres://postgres:postgres@users-db:5432/users_test
+    depends_on:
+      - postgres
+    links:
+      - postgres
+
+  postgres:
+    container_name: postgres
+    build:
+      context: ./services/postgres
+      dockerfile: Dockerfile
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+  nginx:
+    container_name: nginx
+    build:
+      context: ./services/nginx
+      dockerfile: Dockerfile-dev
+    restart: always
+    ports:
+      - 80:80
+    depends_on:
+      - server
+      - client
+
+  client:
+    container_name: client
+    build:
+      context: ./services/client
+      dockerfile: Dockerfile
+    volumes:
+      - './services/client:/usr/src/app'
+      - '/usr/src/app/node_modules'
+    ports:
+      - '3000:3000'
+    #environment:
+      # - NODE_ENV=development
+      # - REACT_APP_USERS_SERVICE_URL=${REACT_APP_USERS_SERVICE_URL}
+    depends_on:
+      - server
+    links:
+      - server
