@@ -12,14 +12,16 @@ services:
       - './services/server:/usr/src/app'
     ports:
       - 5000:5000
-    #environment:
-      # - APP_SETTINGS=project.config.DevelopmentConfig
-      # - DATABASE_URL=postgres://postgres:postgres@users-db:5432/users_dev
-      # - DATABASE_TEST_URL=postgres://postgres:postgres@users-db:5432/users_test
-    depends_on:
-      - postgres
-    links:
-      - postgres
+    environment:
+      MONGO_DB_URI: mongodb://mongo:27017/liran
+      # MONGO_INITDB_DATABASE: liran
+       #- APP_SETTINGS=project.config.DevelopmentConfig
+       #- DATABASE_URL=postgres://postgres:postgres@users-db:5432/users_dev
+       #- DATABASE_TEST_URL=postgres://postgres:postgres@users-db:5432/users_test
+    # depends_on:
+    #   - postgres
+    # links:
+    #   - postgres
 
   postgres:
     container_name: postgres
@@ -32,6 +34,21 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
 
+  mongo:
+    container_name: mongo
+    build:
+      context: ./services/mongo
+      dockerfile: Dockerfile
+    ports:
+      - 27017:27017
+    # TODO: fix database name init
+    environment:
+      - MONGO_INITDB_DATABASE=test
+      # - MONGO_INITDB_ROOT_USERNAME=mongo
+      # - MONGO_INITDB_ROOT_PASSWORD=mongo
+    volumes:
+      - devmongo:/data/db
+  
   nginx:
     container_name: nginx
     build:
@@ -61,3 +78,6 @@ services:
       - server
     links:
       - server
+
+volumes:  
+  devmongo:
